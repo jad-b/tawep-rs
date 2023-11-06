@@ -10,6 +10,7 @@ pub mod chapter2 {
         // 1) Generate vector of string pointers
         let _vs = generate_string(l);
         // 2) Execute comparison
+        // https://doc.rust-lang.org/std/primitive.slice.html#method.sort
         // 3) Output timing
 
     }
