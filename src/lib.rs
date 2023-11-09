@@ -27,11 +27,11 @@ pub mod chapter2 {
         // Create a random lowercase ASCII generator
         let ascii_rng = Uniform::from(SmallA.to_u8()..(SmallZ.to_u8()+1));
         let mut rng = thread_rng();
-        // NEXT| Swap _some_ of the characters with random bytes
         for i in 0..L>>10 {
-           let c = ascii_rng.sample(&mut rng);
-           let idx : u8 = rng.gen() % (L - 1);
-           s[idx] = c;
+            let c = ascii_rng.sample(&mut rng);
+            // NEXT| Fix u8 v. usize
+            let idx : u8 = rng.gen() % (L - 1);
+            s[idx] = c;
         }
 
         return s;
