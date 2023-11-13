@@ -23,14 +23,15 @@ pub mod chapter2 {
 
     fn generate_string() -> [u8; L] {
         // Start with an array filled with 'a'
-        let s = [SmallA.to_u8(); L];
+        let mut s = [SmallA.to_u8(); L];
         // Create a random lowercase ASCII generator
         let ascii_rng = Uniform::from(SmallA.to_u8()..(SmallZ.to_u8()+1));
         let mut rng = thread_rng();
-        for i in 0..L>>10 {
+
+        for _i in 0..L>>10 {
             let c = ascii_rng.sample(&mut rng);
             // NEXT| Fix u8 v. usize
-            let idx : u8 = rng.gen() % (L - 1);
+            let idx = rng.gen::<usize>() % (L - 1);
             s[idx] = c;
         }
 
