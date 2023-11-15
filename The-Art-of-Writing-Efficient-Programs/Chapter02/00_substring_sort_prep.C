@@ -10,6 +10,7 @@
         minstd_rand rgen; // unsigned 32 bit integer
         using rand_t = minstd_rand::result_type;
 
+        // 1a) Generate L possible values
         if(0) for (             // Option A
             char* p = s.get(),  // get the head value from the char array
             *end = p + L;       // set to (init. mem pos. + 2^18)
@@ -29,15 +30,16 @@
                 L*sizeof(char)); // End of char array
             // Swap _some_ (L>>10) of the characters for other letters
             for (unsigned int i = 0; i < L/1024; ++i) { // L/1024==(L>>10)
-                s[rgen() % (L - 1)] = // L-1: Oveflow protection?
-                  'a' + (rgen() % ('z' - 'a' + 1));
+                s[rgen() % (L - 1)] = 'a' + (rgen() % ('z' - 'a' + 1));
             }
         }
-        s[L-1] = 0;
+        // 1b) Sample n values
+        s[L-1] = 0; // The null character
         for (unsigned int i = 0; i < N; ++i) {
             vs[i] = &s[rgen() % (L - 1)];
         }
-        //cout << "s=" << s.get() << endl;
+        cout << "|s|=" << L << endl;
+        cout << "|vs|=" << N << endl;
         //for (unsigned int i = 0; i < N; ++i) cout << "vs[" << i << "]=" << vs[i] << endl;
     }
     system_clock::time_point t1 = system_clock::now();

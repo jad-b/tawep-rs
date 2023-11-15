@@ -41,13 +41,13 @@ pub mod chapter2 {
             vs.push(&s[s_idx..]);
             // println!("vs[{}]|{}| = @s[{}]", _i, vs[_i].len(), s_idx)
         }
+        println!("|vs|={}", vs.len());
         return vs
     }
 
     fn generate_string<R: Rng + Sized>(rng : &mut R, l : usize) -> String {
         // Start with an Vector of 'a' bytes
         let mut s = vec![SmallA.to_u8(); l];
-        println!("Made buffer of size {}", l);
         // Create a random lowercase ASCII generator
         let ascii_rng = Uniform::new_inclusive(SmallA.to_u8(), SmallZ.to_u8());
 
@@ -58,6 +58,7 @@ pub mod chapter2 {
             // println!("[{}] = {}", idx, Char::from_u8(c).unwrap());
         }
 
+        println!("|s|={}", l);
         return String::from_utf8(s).unwrap();
     }
 
