@@ -5,26 +5,32 @@ pub mod chapter2 {
     use rand::{thread_rng, Rng};
     use rand::distributions::{Distribution, Uniform};
     use std::ascii::Char::{SmallA, SmallZ};
+    use std::cmp::Ordering;
+    use std::time::Instant;
 
-
-    pub fn substring_sort() {
-        // Size of the string we'll sample substrings from
-        let l = 1 << 18;
-        // Number of substring samples
-        let n = 1 << 14;
-
-        // 1a) Generate l possible values
+    pub fn substring_sort(string_size :usize, num_substrings : usize) {
+        // 1a) Generate possible values
         let mut rng = thread_rng();
-        let s = generate_string(&mut rng, l);
-        // 1b) Sample n values
-        let _vs = sample_strings(&mut rng, &s, n);
+        let s = generate_string(&mut rng, string_size);
+        // 1b) Sample values
+        let mut vs = sample_strings(&mut rng, &s, num_substrings);
 
-        // 2) Execute comparison
+        // 2) Sort
         // https://doc.rust-lang.org/std/primitive.slice.html#method.sort
-        // let t1 = // Start timer
+        let t1 = Instant::now();
+        let mut count = 0;
 
-        // 3) Output timing
+        vs.sort_by(|a, b| {
+            count += 1;
+            return compare_a(a, b);
+        });
 
+        // next| check sizes. c++ shows more comparisons that rust.
+        println!("Sort time: {}ms ({} comparisons)", t1.elapsed().as_millis(), count);
+    }
+
+    fn compare_a(s1 : &str, s2 : &str) -> Ordering {
+        return s1.cmp(s2);
     }
 
     fn sample_strings <'a, R: Rng + Sized> (rng : &mut R, s : &'a str, n : usize) -> Vec<&'a str> {
@@ -33,14 +39,13 @@ pub mod chapter2 {
         for _i in 0..n {
             let s_idx = rng.gen::<usize>() % (s.len() - 1);
             vs.push(&s[s_idx..]);
-            println!("vs[{}]|{}| = @s[{}]", _i, vs[_i].len(), s_idx)
+            // println!("vs[{}]|{}| = @s[{}]", _i, vs[_i].len(), s_idx)
         }
         return vs
     }
 
     fn generate_string<R: Rng + Sized>(rng : &mut R, l : usize) -> String {
-        // Idea| Create a String, filled with 'a', and teach Uniform to generate Chars
-        // Start with an Vector of 'a'
+        // Start with an Vector of 'a' bytes
         let mut s = vec![SmallA.to_u8(); l];
         println!("Made buffer of size {}", l);
         // Create a random lowercase ASCII generator
@@ -59,6 +64,11 @@ pub mod chapter2 {
     #[cfg(test)]
     mod tests {
         use super::*;
+
+        #[test]
+        fn sort_substrings() {
+            substring_sort(1 << 18, 1 << 14);
+        }
 
         #[test]
         fn generates_string_of_size_l() {
