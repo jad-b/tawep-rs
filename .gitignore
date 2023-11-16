@@ -1,6 +1,7 @@
 /target
 bin/
-prof.data
+prof*.data*
+perf*.data*
 
 
 # Added by cargo
