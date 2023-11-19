@@ -34,6 +34,24 @@ but here are some of the resources and commands I ended up using.
 
     clang++ -g -O3 -mavx2 -Wall -pedantic 01_substring_sort.C 01_substring_sort_a.C -o example
 
+The following variables can save some typing:
+```bash
+export CLANG=(
+  clang++
+  -g
+  -O3
+  -mavx2
+  -Wall
+  -pedantic
+)
+export BENCH=(
+  -I${GBENCH_DIR}
+  -pthread
+  -lrt
+  -lm
+  ${GBENCH_DIR}/build/src/libbenchmark.a
+)
+```
 
 #### Profiling
 4. Add `-lprofiler` to the compiler arguments
