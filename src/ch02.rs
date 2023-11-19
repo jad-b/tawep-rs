@@ -1,10 +1,16 @@
 use rand::{thread_rng, Rng};
 use rand::distributions::{Distribution, Uniform};
 use std::ascii::Char::{SmallA, SmallZ};
-use std::cmp::Ordering;
+use std::cmp::Ordering::{self, *};
 use std::time::Instant;
 
-pub fn substring_sort(string_size :usize, num_substrings : usize) {
+pub fn substring_sort<F>(
+    string_size: usize,
+    num_substrings:  usize,
+    f: F
+) where
+    F: Fn(&str, &str) -> Ordering
+{
     // 1a) Generate possible values
     let mut rng = thread_rng();
     let s = generate_string(&mut rng, string_size);
@@ -18,10 +24,22 @@ pub fn substring_sort(string_size :usize, num_substrings : usize) {
 
     vs.sort_by(|a, b| {
         count += 1;
-        return compare_builtin(a, b);
+        return f(a, b);
     });
 
     println!("Sort time: {}ms ({} comparisons)", t1.elapsed().as_millis(), count);
+}
+
+pub fn compare_chars(s1: &str, s2: &str) -> Ordering {
+    if s1 == s2 {
+        return Equal;
+    }
+    for (c1, c2) in s1.chars().zip(s2.chars()) {
+        if c1 != c2 {
+            return c1.cmp(&c2);
+        }
+    }
+    return Equal;
 }
 
 pub fn compare_builtin(s1 : &str, s2 : &str) -> Ordering {
@@ -62,8 +80,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sort_substrings() {
-        substring_sort(1 << 18, 1 << 14);
+    fn sort_with_builtin_cmp() {
+        substring_sort(1 << 18, 1 << 14, compare_builtin);
+    }
+
+    #[test]
+    fn sort_using_compare_on_chars() {
+        let l = 1 << 18;
+        let n = 1 << 14;
+        substring_sort(l, n, compare_chars);
     }
 
     #[test]
