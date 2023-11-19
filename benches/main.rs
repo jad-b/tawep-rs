@@ -5,7 +5,7 @@ extern crate test;
 #[cfg(test)]
 mod ch02 {
     use rand::thread_rng;
-    use tawep::ch02::{generate_string, sample_strings, compare_a};
+    use tawep::ch02::{generate_string, sample_strings, compare_builtin};
     use test::Bencher;
 
     #[bench]

@@ -18,14 +18,13 @@ pub fn substring_sort(string_size :usize, num_substrings : usize) {
 
     vs.sort_by(|a, b| {
         count += 1;
-        return compare_a(a, b);
+        return compare_builtin(a, b);
     });
 
-    // next| check sizes. c++ shows more comparisons that rust.
     println!("Sort time: {}ms ({} comparisons)", t1.elapsed().as_millis(), count);
 }
 
-pub fn compare_a(s1 : &str, s2 : &str) -> Ordering {
+pub fn compare_builtin(s1 : &str, s2 : &str) -> Ordering {
     return s1.cmp(s2);
 }
 
