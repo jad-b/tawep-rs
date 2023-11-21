@@ -1,32 +1,44 @@
-#![feature(test)]
+use criterion::{criterion_group, criterion_main};
 
-extern crate test;
-
-#[cfg(test)]
-mod ch02 {
+pub mod ch02 {
+    use criterion::{Criterion};
     use rand::thread_rng;
     use tawep::ch02::*;
-    use test::Bencher;
 
-    #[bench]
-    fn sort_using_builtin_cmp(b: &mut Bencher) {
+    pub fn sort_using_builtin_cmp(c: &mut Criterion) {
         let mut rng = thread_rng();
-        let s = generate_string(&mut rng, 1 << 18);
+        let (l, n) = (1 << 18, 1 << 14);
+        let s = generate_string(&mut rng, l);
         // 1b) Sample values
-        let mut vs = sample_strings(&mut rng, &s, 1 << 14);
+        let mut vs = sample_strings(&mut rng, &s, n);
         // next| write custom string comparators
 
-        b.iter(|| vs.sort_by(|a, b| return compare_builtin(a, b)));
+        c.bench_function(&format!("Builtin 'str.cmp()'[{} substrings/string {}]", l, n),
+                         |b| b.iter(|| vs.sort_by(|a, b| compare_builtin(a, b))));
     }
 
-    #[bench]
-    fn sort_using_char_cmp(b: &mut Bencher) {
+    pub fn sort_using_char_cmp(c: &mut Criterion) {
         let mut rng = thread_rng();
-        let s = generate_string(&mut rng, 1 << 18);
+        let (l, n) = (1 << 18, 1 << 14);
+        let s = generate_string(&mut rng, l);
         // 1b) Sample values
-        let mut vs = sample_strings(&mut rng, &s, 1 << 14);
+        let mut vs = sample_strings(&mut rng, &s, n);
         // next| write custom string comparators
 
-        b.iter(|| vs.sort_by(|a, b| return compare_chars(a, b)));
+        c.bench_function(&format!("By-char comparison[{} substrings/string {}]", l, n),
+                         |b| b.iter(|| vs.sort_by(|a, b| compare_chars(a, b))));
     }
 }
+
+pub mod ch03 {
+    use criterion::{black_box, Criterion};
+
+    pub fn bm_add(c: &mut Criterion) {
+        let f = |a, b| a + b;
+        c.bench_function("addition placeholder", |b| b.iter(|| f(black_box(2), black_box(3))));
+    }
+
+}
+
+criterion_group!(benches, ch02::sort_using_builtin_cmp, ch02::sort_using_char_cmp, ch03::bm_add);
+criterion_main!(benches);

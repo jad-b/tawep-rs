@@ -7,3 +7,10 @@ edition = "2021"
 
 [dependencies]
 rand = { version = "0.8.5", features = ["min_const_gen"] }
+
+[dev-dependencies]
+criterion = { version = "0.4", features = ["html_reports"] }
+
+[[bench]]
+name = "main"
+harness = false
