@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
+#define MCA_START __asm volatile("# LLVM-MCA-BEGIN");
+#define MCA_END __asm volatile("# LLVM-MCA-END");
 
 #include "benchmark/benchmark.h"
 
@@ -16,7 +18,10 @@ void BM_add(benchmark::State& state) {
     for (auto _ : state) {
         unsigned long a1 = 0, a2 = 0;
         for (size_t i = 0; i < N; ++i) {
+MCA_START
             a1 += p1[i] + p2[i];
+            a2 += p1[i] * p2[i];
+MCA_END
         }
         benchmark::DoNotOptimize(a1);
         benchmark::DoNotOptimize(a2);
