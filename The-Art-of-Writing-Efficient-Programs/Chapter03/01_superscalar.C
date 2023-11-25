@@ -297,7 +297,9 @@ void BM_add_multiply_dep(benchmark::State& state) {
     for (auto _ : state) {
         unsigned long a1 = 0, a2 = 0;
         for (size_t i = 0; i < N; ++i) {
+MCA_START
             a1 += (p1[i] + p2[i]) * (p1[i] - p2[i]);
+MCA_END
             //a1 += (p1[i] * p2[i]);
         }
         benchmark::DoNotOptimize(a1);

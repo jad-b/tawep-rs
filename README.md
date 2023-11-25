@@ -29,32 +29,40 @@ but here are some of the resources and commands I ended up using.
 * [Perf wiki](https://perf.wiki.kernel.org/index.php/Perf_tools_support_for_Intel%C2%AE_Processor_Trace#Downloading_and_building_the_latest_perf_tools)
 * [How to change the install destination](https://stackoverflow.com/a/72922164)
 
+Configurating permissions may be required too:
+
+    sudo sysctl kernel.perf_event_paranoid=-1
+
+### LLVM-MCA
+
+    clang++-15 01_superscalar.C -g -O3 -mavx \
+        --std=c++17 -mllvm -x86-asm-syntax=intel -S -o - \
+      | llvm-mca-15 -mcpu=btver2 -timeline
+
+If you're seeing:
+> fatal error: 'algorithm' file not found
+
+Check the gcc version being selected by `clang -v`
+> Selected GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/12
+
+And ensure you've got the matching libstdc++ version to match
+([so](https://stackoverflow.com/a/75546125):
+
+    sudo apt-get install libstdc++-12-dev
+
+
 ### C++
 #### Building
 
-    clang++ -g -O3 -mavx2 -Wall -pedantic 01_substring_sort.C 01_substring_sort_a.C -o example
+The included `tawep` script can save some typing:
 
-The following variables can save some typing:
-```bash
-export CLANG=(
-  clang++
-  -g
-  -O3
-  -mavx2
-  -Wall
-  -pedantic
-)
-export BENCH=(
-  -I${GBENCH_DIR}
-  -pthread
-  -lrt
-  -lm
-  ${GBENCH_DIR}/build/src/libbenchmark.a
-)
-```
+    ../../tawep build cpp 01_substring_sort.C 01_substring_sort_a.C
+
 
 #### Profiling
-4. Add `-lprofiler` to the compiler arguments
+1. Build with profiling enabled:
+
+    ../../tawep build profile 01_substring_sort.C 01_substring_sort_a.C
 5. Execute the program:
 
     CPUPROFILE=prof.data <program>
@@ -64,4 +72,13 @@ export BENCH=(
 
 ### Rust
 
-    cargo test
+### LLVM-MCA
+
+`llvm-mca`-readable assembly can generated using:
+
+    cargo rust -- --emit=asm
+
+Which can be cat'd into `llvm-mca`:
+
+    cat $(ls -t ./target/debug/deps/*.s | head -n1) \
+      llvm-mca -mcpu=btver2 -timeline

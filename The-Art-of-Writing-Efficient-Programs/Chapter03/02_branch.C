@@ -364,13 +364,13 @@ void BM_branched(benchmark::State& state) {
         for (size_t i = 0; i < N; ++i) {
 #if 0
             (b1[i] ? a1 : a2) += p1[i];
-#else 
+#else
             if (b1[i]) {
                 a1 += p1[i];
             } else {
                 a2 += p1[i];
             }
-#endif // 1 
+#endif // 1
         }
         benchmark::DoNotOptimize(a1);
         benchmark::DoNotOptimize(a2);
@@ -641,7 +641,7 @@ void BM_branchless_code(benchmark::State& state) {
     state.SetItemsProcessed(N*state.iterations());
     //state.SetBytesProcessed(N*sizeof(unsigned long)*state.iterations());
 }
-#endif // 0 
+#endif // 0
 
 #define ARGS \
     ->Arg(1<<22)
@@ -649,7 +649,7 @@ void BM_branchless_code(benchmark::State& state) {
 //BENCHMARK(BM_add_multiply) ARGS;
 //BENCHMARK(BM_branch_cmove) ARGS;
 //BENCHMARK(BM_branch_predicted) ARGS;
-//BENCHMARK(BM_branch_not_predicted) ARGS;
+BENCHMARK(BM_branch_not_predicted) ARGS;
 //BENCHMARK(BM_branch_predict12) ARGS;
 //BENCHMARK(BM_false_branch) ARGS;
 //BENCHMARK(BM_false_branch_temp) ARGS;

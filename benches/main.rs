@@ -11,7 +11,6 @@ pub mod ch02 {
         let s = generate_string(&mut rng, l);
         // 1b) Sample values
         let mut vs = sample_strings(&mut rng, &s, n);
-        // next| write custom string comparators
 
         c.bench_function(&format!("Builtin 'str.cmp()'[{} substrings/string {}]", l, n),
                          |b| b.iter(|| vs.sort_by(|a, b| compare_builtin(a, b))));
@@ -40,5 +39,9 @@ pub mod ch03 {
 
 }
 
-criterion_group!(benches, ch02::sort_using_builtin_cmp, ch02::sort_using_char_cmp, ch03::bm_add);
+criterion_group!(
+    benches,
+    ch02::sort_using_builtin_cmp,
+    ch02::sort_using_char_cmp,
+    ch03::bm_add);
 criterion_main!(benches);

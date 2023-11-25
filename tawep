@@ -1,0 +1,45 @@
+#!/bin/bash
+set -euo pipefail
+
+CLANG_CPP=$(compgen -c clang++ | sort -u | head -n1)
+export CLANG=(
+  ${CLANG_CPP}
+  -g
+  -O3
+  -mavx2
+  -Wall
+  -pedantic
+)
+
+build() {
+  local output="./bin/${2//.*}"
+  echo "Binary: ${output}"
+  mkdir -p ./bin
+
+  case "$1" in
+    cpp)
+      ${CLANG[@]} ${@:2} -o ${output}
+      ;;
+    profile)
+      echo ${CLANG[@]} ${@:2} -lprofiler -o ${output}
+      ${CLANG[@]} ${@:2} -lprofiler -o ${output}
+      ;;
+    bench)
+      local gbench_dir=$(realpath $(find ~ -path '*/google/benchmark' -type d 2>/dev/null | head -n1))
+      local bench=(
+        -I${gbench_dir}/include
+        ${@:2}
+        ${gbench_dir}/build/src/libbenchmark.a
+        -pthread
+        -lrt
+        -lm
+      )
+      ${CLANG[@]} ${bench[@]} -o ${output}
+      ;;
+    *)
+      printf "'%s' wasn't recognized as a command\n" "$1"
+      ;;
+  esac
+}
+
+$@
