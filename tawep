@@ -42,4 +42,13 @@ build() {
   esac
 }
 
+info() {
+  case "$1" in
+    cache)
+      # https://www.baeldung.com/linux/check-cache-size-l1-l2-l3
+      lscpu | grep cache
+      ;;
+  esac
+}
+
 $@
