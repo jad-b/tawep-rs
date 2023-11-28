@@ -30,5 +30,27 @@ Things to consider:
 2. What's your access pattern? Sequential or random?
 3. What is the size of your atoms? E.g., i64 (8 bytes) vs. char (1-3 bytes)?
 
+### Benchmarking
+If the operation being observed is very very quick, the cost of the
+benchmarking loop itself may interfere with the measurement. Kind of like
+how observing a tiny particle such as an electron can be interfered with
+by the photons that let us 'see' it in the first place. Unrolling the
+loop manually, e.g. executing the op many times per iteration, can
+ameliorate this observational effect.
+
+What can bencharmking results tell us?
+* Inflection points after plateaus. Likely means you've exceeded a cache.
+* Where memory becomes the bottleneck. At 0.3ns, memory accesses from the
+L1 cache can keep the CPU fed. While hitting the L3 cache is 4x slower at
+~1.2ns, smart access patterns can make the most of the L1 & L2.
+* Whether throughput is yet being effected by payload size. So long as
+we're below our bandwidth, we should see latency as the limiting factor.
+If latency is increasing/throughput is decreasing as size increases,
+   we're hitting a bandwidth limit.
+
+## Hardware Techniques
+__Prefetch__:
+ Eager retrieval from main memory after detecting sufficient sequential access.
+
 next|
-> A simple benchmark for sequentially reading a large array can look like this:
+> Another performance optimization technique that the hardware employs very successfully is the familiar one
