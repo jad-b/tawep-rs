@@ -42,6 +42,21 @@ build() {
   esac
 }
 
+profile() {
+  case "$1" in
+    l1)
+      local program="$2"
+      # dcache: Data cache
+      perf stat -e \
+        cycles,instructions,L1-dcache-load-misses,L1-dcache-loads \
+        "$program"
+      ;;
+    *)
+      printf "'%s' wasn't recognized as a command\n" "$1"
+      ;;
+  esac
+}
+
 info() {
   case "$1" in
     cache)

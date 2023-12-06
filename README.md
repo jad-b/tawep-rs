@@ -33,7 +33,7 @@ Configurating permissions may be required too:
 
     sudo sysctl kernel.perf_event_paranoid=-1
 
-### LLVM-MCA
+### [LLVM-MCA](https://llvm.org/docs/CommandGuide/llvm-mca.html)
 
     clang++-15 01_superscalar.C -g -O3 -mavx \
         --std=c++17 -mllvm -x86-asm-syntax=intel -S -o - \
