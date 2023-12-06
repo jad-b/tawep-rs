@@ -131,5 +131,39 @@ __Problem__
 : One thread is creating data, the rest of the threads are reading it -
 but never before it's ready.
 
-### Lock-Free Algorithm
-1. next|
+### Lock-Free Algorithm for Publishing Data
+next| https://learning.oreilly.com/library/view/the-art-of/9781800208117/B16229_06_Final_AM_ePub.xhtml#:-:text=The%20lock-free%20solution%20to,%20and%20the%20consumer%20threads
+1. Producer writes data to a location it has exclusive access to.
+2. Consumers _only_ access data through an atomically-updated
+   pointer/index - some kind of address to the actual data.
+   This address starts as null/invalid
+3. The producer atomically updates the data address, using a release
+   memory barrier, ensuring all operations prior to the update (which
+   could be dependencies) must be visible as well.
+4. Consumers try to read the address with an acquire memory barrier,
+   ensuring all following operations (which could have a dependency on
+   the producer's data) include the atomic op to read the data.
+
+### Smart pointers for concurrent programming
+#### Unique Pointer
+* `publish(T*)` atomically stores the new pointer address
+* `get()` atomically loads the pointer address
+* No thread-safety around construcion.
+* No safety for multiple producers
+
+#### Shared pointer
+* Counts references to it
+* Its internal counter is incremented or decremented atomically
+* But: the same shared pointer instance _must not_ be accessed at the
+same time. First you make the original shared pointer, then you give each
+thread its copy.
+
+Can we do better than the `std::shared_ptr`? Yes, if you limit functionality in optimal ways.
+* Intrustive shared pointers store their ref count in the object they
+point to. Think a list or tree node. Or use a wrapper class that adds ref
+counting.
+
+So how does performance stack up?
+1. Unique pointers are the fastest.
+2. A custom ref-counted (share) pointer is next.
+3. An off-the-shelf ref-counted pointer is last.
