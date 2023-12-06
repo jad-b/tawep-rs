@@ -166,4 +166,5 @@ counting.
 So how does performance stack up?
 1. Unique pointers are the fastest.
 2. A custom ref-counted (share) pointer is next.
+  * Make it intrusive, and drop all unnecessary functionality.
 3. An off-the-shelf ref-counted pointer is last.
