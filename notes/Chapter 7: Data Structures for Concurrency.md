@@ -9,6 +9,13 @@ Chapter 7: Data Structures for Concurrency
 > structures, unnecessary generality is your enemy. Build only what you
 > need.
 
+Takeaways
+----------------------------------------
+* Minimize where thread safety is needed.
+  * Copying data for thread-local operations is often better than
+  concurrently accessing shared data
+* Provide the minimal, transactional API to your data structures.
+
 Rust Exercises
 ----------------------------------------
 * Double-checked locking
@@ -203,8 +210,14 @@ and likely, to be non-contiguous.
   - `push_front(x)`
   - `insert_after(x)`
 * Memory layout: Array
-  + Shared Data:
+  + Shared Data: Pointers (memory addresses) to nodes, whether attached
+  to a node or temporary ones created during iteration
 
+### Optimizations
+* A lightweight memory allocator can reduce total allocations. It can
+serve as a buffer for memory, receiving allocations in chunks but
+distributing node-sized fragments, and returning "deallocated" nodes back
+to its pool without releasing it to the OS.
 
 ### Considerations
 * Almost certainly requires the use of reference-counted smart pointers.
@@ -221,12 +234,74 @@ operations don't require locking multiple nodes.
     - Copy the data you need into a thread-local DS
     - Divide the DS into single-threaded partitions
 
+
+
 ### Lock-Free List
-next| Lock-Free List
+First: What is the challenge of going lock-free?
 
-### Optimizations
-* A lightweight memory allocator can reduce total allocations. It can
-serve as a buffer for memory, receiving allocations in chunks but
-distributing node-sized fragments, and returning "deallocated" nodes back
-to its pool without releasing it to the OS.
+__A-B-A Problem__
+: Wherein
+1. 'A' reads data, like a pointer address
+2. 'B' modifies this data in such a way that 'A's read appears unchanged.
+  * Overwiting the data at 'A's pointer address would qualify.
+3. 'A' checks its read, sees the original value, and proceeds
 
+With no lock on the original value of a pointer, it is possible for our
+CAS op to be 'fooled' into thinking nothing has changed and complete when
+it shouldn't have.
+
+Note the crux of the problem is _deallocation_, not _deletion_.
+Removing the node from the DS is fine, it's the corruption to the shared
+data of the memory address.
+
+Solutions:
+1. Poor man's GC: defer deallocation. Move deleted nodes, but free their memory at the
+   end of the program.
+1. Garbage collection. Removed nodes are held by the GC, which
+   periodically deallocates their memory for you. This may be
+   stop-the-world, which effectively locks your lock-free DS.
+1. Read-Copy-Update.
+  1. Copy the target node's data into a new allocation only visible to
+     the local thread, a la the publishing protocol
+     * Store a shared pointer to the old node.
+  2. Modify the local version
+  3. CAS-update the shared pointer from the old node to your new node
+  4. Sleep until no one else has a pointer to the of old node
+  5. Deallocate the old node.
+1. Hazard Pointers: Each thread has a thread-local list of ('hazard') pointers to
+   any nodes they're currently accessing. Threads are responsible for
+   checking if any nodes are claimed by any threads hazard pointers
+   (jdb| Using RC pointers? Unclear how this check is made efficient and thread-safe).
+     * jdb| Kinda like a decentralized read-write lock?
+1. Atomic Shared Pointers. See below
+
+#### Safety Through Atomic Shared Pointers.
+* Shared Data:
+  + Head pointer
+  + Tail pointer
+  + Next pointers in each node
+  + Pointers created during iteration
+* All shared pointers become atomic shared (RC'd) pointers
+  + Ref counts are now atomically protected, guaranteeing an accurate count
+  + Deallocation will only proceed when the rc=0
+  - jdb) would be curious to prove that the `next` of the iterator's
+    current node can never become invalid
+* Consider:
+  + If all ops happen at the edges of your DS, a spinlock-guard will be fastest.
+  + Multiple pointers make things weirder:
+    * Modifying two atomic pointers in a row isn't a transactional
+    operation.
+    * Bidirectional pointers (doubly-linked lists, undirected graphs)
+    have pointers loops, where the DS is self-referencing in such a way
+    that the RC never equals 0, preventing deallocation from ever
+    occurring.
+      * The single-threaded approach of making non-primary pointers (like `prev` in a list)
+        weak doesn't help. Weak pointers keep RCs, but don't prevent
+        deallocation. And since deallocation is the problem in concurrent
+        DSs, they're of no help.
+      * We can execute a localized GC:
+        - Given a node with zero external references (in a doubly-linked
+          list, you would expect, what, 2? 1?)
+        - For each linked node, check them for external references.
+          Delete those with zero external references.
+      * Or use hazard pointers or a more explicit GC
